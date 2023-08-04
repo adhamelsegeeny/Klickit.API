@@ -50,7 +50,8 @@ namespace ProductsAPI.Controllers
             {
                 return Ok(new
                 {
-                    message= "Login Success"
+                    message= "Login Success",
+                    username= user.Username
                 });
             }
             else

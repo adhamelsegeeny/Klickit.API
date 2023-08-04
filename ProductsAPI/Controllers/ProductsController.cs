@@ -37,9 +37,39 @@ namespace ProductsAPI.Controllers
                 }
             }
             return new JsonResult(table);
-            
 
 
-        }   
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProduct(Product product)
+        {
+            string query = @"
+                    insert into dbo.Products values
+                    (@Name,@Price)
+                    ";
+            DataTable table = new DataTable();
+            string sqlDataSource = _configuration.GetConnectionString("DefaultConnection"); SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, myCon))
+                {
+
+                    myCommand.Parameters.AddWithValue("@Name", product.Name);
+                    myCommand.Parameters.AddWithValue("@Price", product.Price);
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+            }
+            return Ok(new
+            {
+                message = "Product added successfully"
+            });
+        }
+
     }
 }

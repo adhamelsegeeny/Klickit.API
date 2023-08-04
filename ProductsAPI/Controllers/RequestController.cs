@@ -21,12 +21,10 @@ namespace ProductsAPI.Controllers
 
         public async Task<IActionResult> AddRequest(Request request)
         {
-            if (request == null)
-            {
-                return BadRequest();
-            }
             string query = @"
-                    insert into dbo.Requests (username, product_id) values (@Username, @Product)";
+                    insert into dbo.Requests values
+                    (@Username,@Product_id,@Product_name,@Product_price)
+                    ";
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("DefaultConnection");
             SqlDataReader myReader;
@@ -35,8 +33,11 @@ namespace ProductsAPI.Controllers
                 myCon.Open();
                 using (SqlCommand myCommand = new SqlCommand(query, myCon))
                 {
+
                     myCommand.Parameters.AddWithValue("@Username", request.Username);
-                    myCommand.Parameters.AddWithValue("@Product", request.Product_id);
+                    myCommand.Parameters.AddWithValue("@Product_id", request.Product_id);
+                    myCommand.Parameters.AddWithValue("@Product_name", request.Product_name);
+                    myCommand.Parameters.AddWithValue("@Product_price", request.Product_price);
                     myReader = myCommand.ExecuteReader();
                     table.Load(myReader);
                     myReader.Close();
@@ -48,6 +49,56 @@ namespace ProductsAPI.Controllers
                 message = "Request added successfully"
             });
         }
+
+        //entering the username in the path gets the requests
+        [HttpGet("{username}")]
+        public async Task<IActionResult> GetRequests(String username)
+        {
+            string query = @"
+                    select * from dbo.Requests where username = @Username";
+            DataTable table = new DataTable();
+            string sqlDataSource = _configuration.GetConnectionString("DefaultConnection");
+            SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, myCon))
+                {
+                    //get the username from the path
+
+                    myCommand.Parameters.AddWithValue("@Username",username);
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+            }
+            return Ok(table);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRequests()
+        {
+            string query = @"
+                    select * from dbo.Requests";
+            DataTable table = new DataTable();
+            string sqlDataSource = _configuration.GetConnectionString("DefaultConnection");
+            SqlDataReader myReader;
+            using (SqlConnection myCon = new SqlConnection(sqlDataSource))
+            {
+                myCon.Open();
+                using (SqlCommand myCommand = new SqlCommand(query, myCon))
+                {
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+                    myReader.Close();
+                    myCon.Close();
+                }
+            
+        }
+            return Ok(table);
+        }
+
 
     }
 }
